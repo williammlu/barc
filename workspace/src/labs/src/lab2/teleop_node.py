@@ -4,22 +4,24 @@ import rospy
 import time
 from barc.msg import ECU
 from labs.msg import Z_DynBkMdl 
+from geometry_msgs.msg import Twist
 	
 # initialize state
 x = 0
 y = 0
 v_x = 0
 v_y = 0
+
+accel = 0
+ang_accel = 0
 	
 # ecu command update
-def measurements_callback(data):
- 	global x, y, psi, v_x, v_y, psi_dot
-	x = data.x
-	y = data.y
-	psi = data.psi 
-	v_x = data.v_x 
-	v_y = data.v_y 
-	psi_dot = data.psi_dot
+def twist_callback(twist):
+    print "twist callback~!!!"
+    global accel, ang_accel
+    accel = twist.linear.y
+    ang_accel = twist.angular.y
+
 	 	
 # Insert your PID longitudinal controller here: since you are asked to do longitudinal control,  the steering angle d_f can always be set to zero. Therefore, the control output of your controller is essentially longitudinal acceleration acc.
 # ==========PID longitudinal controller=========#
@@ -47,8 +49,8 @@ def controller():
 	# initialize node
 	rospy.init_node('controller', anonymous=True)
 	
+	rospy.Subscriber('/cmd_vel', Twist, twist_callback)
 	# topic subscriptions / publications
-	rospy.Subscriber('z_vhcl', Z_DynBkMdl, measurements_callback)
 	state_pub = rospy.Publisher('ecu', ECU, queue_size = 10)
 	
 	# set node rate
@@ -74,8 +76,9 @@ def controller():
 	 	# steering angle
 	 	d_f = 0.0
 	
+	        global accel, ang_accel
 		# publish information
-	 	state_pub.publish( ECU(acc, d_f) )
+	 	state_pub.publish( ECU(accel, ang_accel))
 	
 		# wait
 		rate.sleep()

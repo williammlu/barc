@@ -22,28 +22,7 @@ def twist_callback(twist):
     accel = twist.linear.y
     ang_accel = twist.angular.y
 
-	 	
-# Insert your PID longitudinal controller here: since you are asked to do longitudinal control,  the steering angle d_f can always be set to zero. Therefore, the control output of your controller is essentially longitudinal acceleration acc.
-# ==========PID longitudinal controller=========#
-class PID():
-	def __init__(self, kp=1, ki=1, kd=1):
-		self.kp = kp
-		self.ki = ki
-		self.kd = kd
-                self.int = 0
-                self.prev_err = 0
-	
-	def acc_calculate(self, speed_reference, speed_current):
-                error = speed_reference - speed_current
-                self.int += error/50.0
-                der = self.prev_err - error
-                self.prev_err = error
-	 	acc = self.kp * error + self.ki * self.int + self.kd * der
 
-	 	return acc
-	
-# ==========end of the controller==============#
-	
 # controller node
 def controller():
 	# initialize node
@@ -59,22 +38,9 @@ def controller():
 	rate = rospy.Rate(loop_rate)
 	t0 = time.time()
 	
-	# set initial conditions 
-	d_f = 0
-	acc = 0
 	
-	# reference speed 
-	v_ref = 8 # reference speed is 8 m/s
-	
-	# Initialize the PID controller with your tuned gains
-	PID_control = PID(kp=5, ki=0.5, kd=0.5) # may tune this TODO
 	
 	while not rospy.is_shutdown():
-		# acceleration calculated from PID controller.
-	 	acc = PID_control.acc_calculate(v_ref, v_x)
-	 
-	 	# steering angle
-	 	d_f = 0.0
 	
 	        global accel, ang_accel
 		# publish information

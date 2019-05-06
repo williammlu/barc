@@ -1,5 +1,5 @@
 <launch>
-    <arg name="id" />
+    <arg name="id" value="drift"/>
 
     <!-- ARDUINO -->
     <node pkg="rosserial_python" type="serial_node.py" name="arduino_node" >

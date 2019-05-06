@@ -47,8 +47,8 @@ def main():
     #df              = int( uniform( a, b ) )
     F2              = 990   # brake
 
-    u_motor_neutral = 1500
-    u_servo_neutral = 1500
+    u_motor_neutral = 1600
+    u_servo_neutral = 1520
     u_motor         = u_motor_neutral
     u_servo         = u_servo_neutral
 
@@ -61,6 +61,7 @@ def main():
     straight    = False        
     turn        = False
     brake       = False
+    t_turn = 0.5
  
     while not rospy.is_shutdown():
         # get time
@@ -68,11 +69,13 @@ def main():
         t   = now.secs + now.nsecs/(10.0**9) - t0
         
         # get vehicle into initial state
-        if enc.s_m1 < s:
+        # encoder distance is negative for some reason????
+        if -enc.s_m1 < s:
             if not straight:
                 rospy.logwarn("Going straight ...")
                 straight = True
 
+            rospy.logwarn("Moving straight, encoder: %s | limit: %s" % (str(enc.s_m1), str(s)))
              # compute feedforward / feedback command for motor
             u_ff    = u_motor_neutral
             u_fb    = pid_motor.update( enc.vhat_m1 )
@@ -84,27 +87,26 @@ def main():
             u_servo = u_ff + int(u_fb)
 
             t_straight  = t
-        else:
-            u_motor = u_motor_neutral
-            u_servo = u_servo_neutral
+        #else:
+        #    u_motor = u_motor_neutral
+        #    u_servo = u_servo_neutral
 
         # perform aggresive turn and accelerate
-        """
-        elif t < t_straight + ???:
+        elif t < t_straight + t_turn:
             if not turn:
                 rospy.logwarn("Turning and accelerating ...")
                 turn = True
-            u_motor = ??? 
-            u_servo = ???
+            u_motor = 1900 
+            u_servo = 1800
 
         # apply brake
         else:
             if not brake:   
                 rospy.logwarn("Braking ! ...")
                 brake = True
-            u_motor = ???
-            u_servo = ???
-        """
+            u_motor = 1000
+            u_servo = u_servo_neutral
+        
 
         # publish control command
         #rospy.logwarn("v1 = {}".format(enc.vhat_m1))
